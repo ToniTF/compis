@@ -1,8 +1,8 @@
 </main>
-    <footer>
-        <p>&copy; <?php echo date("Y"); ?> Planes entre Compis. Todos los derechos reservados.</p>
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; <?php echo date('Y'); ?> Compis - Encuentra planes con amigos</p>
+        </div>
     </footer>
-    <!-- Aquí puedes enlazar tus archivos JS -->
-    <!-- <script src="js/main.js"></script> -->
 </body>
 </html>

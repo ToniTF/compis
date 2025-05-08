@@ -1,6 +1,6 @@
 <?php include_once __DIR__ . '/../../templates/header.php'; ?>
 
-<h2>Iniciar Sesión</h2>
+<h2 class="page-title">Iniciar Sesión</h2>
 <?php
 // Usar la función de ayuda para mostrar mensajes
 require_once __DIR__ . '/../../src/lib/helpers.php';
@@ -9,17 +9,27 @@ if ($message) {
     echo "<p class='message " . htmlspecialchars($message['type']) . "'>" . htmlspecialchars($message['text']) . "</p>";
 }
 ?>
-<form action="index.php?action=login" method="POST">
-    <div>
-        <label for="email">Correo Electrónico:</label>
-        <input type="email" id="email" name="email" required value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
+
+<div class="card">
+    <div class="card-content">
+        <form action="index.php?action=login" method="POST" class="form-container">
+            <div class="form-group">
+                <label for="email">Correo Electrónico:</label>
+                <input type="email" id="email" name="email" class="form-control" required value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
+            </div>
+            <div class="form-group">
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" name="password" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <button type="submit" name="login_submit" class="btn btn-primary">Iniciar Sesión</button>
+            </div>
+        </form>
     </div>
-    <div>
-        <label for="password">Contraseña:</label>
-        <input type="password" id="password" name="password" required>
-    </div>
-    <button type="submit" name="login_submit">Iniciar Sesión</button>
-</form>
-<p>¿No tienes una cuenta? <a href="index.php?action=register">Regístrate aquí</a></p>
+</div>
+
+<div style="text-align: center; margin-top: 20px;">
+    <p>¿No tienes una cuenta? <a href="index.php?action=register" class="btn btn-outline">Registrarse</a></p>
+</div>
 
 <?php include_once __DIR__ . '/../../templates/footer.php'; ?>
