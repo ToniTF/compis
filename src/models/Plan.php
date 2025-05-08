@@ -215,5 +215,103 @@ class Plan {
         }
     }
 
+    /**
+     * Permite a un usuario cancelar su asistencia a un plan.
+     *
+     * @param int $userId ID del usuario.
+     * @param int $planId ID del plan.
+     * @return bool True si la cancelación fue exitosa, false en caso contrario.
+     */
+    public function leavePlan(int $userId, int $planId): bool {
+        try {
+            $stmt = $this->pdo->prepare("DELETE FROM plan_registrations WHERE user_id = ? AND plan_id = ?");
+            return $stmt->execute([$userId, $planId]);
+        } catch (PDOException $e) {
+            // error_log("Error al cancelar asistencia al plan: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Elimina un plan y todas sus inscripciones asociadas.
+     * Solo el creador del plan puede eliminarlo.
+     *
+     * @param int $planId ID del plan a eliminar.
+     * @param int $userId ID del usuario que intenta eliminar el plan.
+     * @return bool True si la eliminación fue exitosa, false en caso contrario.
+     */
+    public function deletePlanById(int $planId, int $userId): bool {
+        $this->pdo->beginTransaction();
+        try {
+            // Verificar si el usuario es el creador del plan
+            $stmt = $this->pdo->prepare("SELECT user_id FROM plans WHERE id = ?");
+            $stmt->execute([$planId]);
+            $creatorId = $stmt->fetchColumn();
+
+            if ($creatorId === false || $creatorId != $userId) {
+                // No es el creador o el plan no existe
+                $this->pdo->rollBack();
+                return false;
+            }
+
+            // Eliminar inscripciones asociadas al plan
+            $stmt = $this->pdo->prepare("DELETE FROM plan_registrations WHERE plan_id = ?");
+            $stmt->execute([$planId]);
+
+            // Eliminar el plan
+            $stmt = $this->pdo->prepare("DELETE FROM plans WHERE id = ?");
+            $result = $stmt->execute([$planId]);
+
+            if ($result) {
+                $this->pdo->commit();
+                return true;
+            } else {
+                $this->pdo->rollBack();
+                return false;
+            }
+        } catch (PDOException $e) {
+            $this->pdo->rollBack();
+            // error_log("Error al eliminar el plan: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Actualiza un plan existente.
+     * Solo el creador del plan puede editarlo.
+     *
+     * @param int $planId ID del plan a actualizar.
+     * @param int $userId ID del usuario que intenta actualizar el plan.
+     * @param string $title Nuevo título del plan.
+     * @param string $description Nueva descripción del plan.
+     * @param string $planDate Nueva fecha y hora del plan.
+     * @param string $location Nuevo lugar del plan.
+     * @param int $maxCapacity Nueva capacidad máxima del plan.
+     * @return bool True si la actualización fue exitosa, false en caso contrario.
+     */
+    public function update(int $planId, int $userId, string $title, string $description, string $planDate, string $location, int $maxCapacity): bool {
+        try {
+            // Verificar si el usuario es el creador del plan
+            $stmt = $this->pdo->prepare("SELECT user_id FROM plans WHERE id = ?");
+            $stmt->execute([$planId]);
+            $creatorId = $stmt->fetchColumn();
+
+            if ($creatorId === false || $creatorId != $userId) {
+                // No es el creador o el plan no existe
+                return false;
+            }
+
+            $stmt = $this->pdo->prepare(
+                "UPDATE plans 
+                 SET title = ?, description = ?, plan_date = ?, location = ?, max_capacity = ?
+                 WHERE id = ?"
+            );
+            return $stmt->execute([$title, $description, $planDate, $location, $maxCapacity, $planId]);
+        } catch (PDOException $e) {
+            // error_log("Error al actualizar plan: " . $e->getMessage());
+            return false;
+        }
+    }
+
 }
 ?>

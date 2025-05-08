@@ -24,28 +24,53 @@ if ($viewPlan) {
         echo "<p><strong>Creado por:</strong> " . htmlspecialchars($viewPlan['creator_email']) . "</p>";
         
         echo "<h4>Participantes (" . htmlspecialchars($viewParticipantCount) . "/" . htmlspecialchars($viewPlan['max_capacity']) . "):</h4>";
-        if (!empty($viewParticipants)) {
+        if (is_array($viewParticipants) && !empty($viewParticipants)) { // Asegurarse de que es un array y no está vacío
             echo "<ul>";
-            foreach ($viewParticipants as $participantEmail) {
-                echo "<li>" . htmlspecialchars($participantEmail) . "</li>";
+            foreach ($viewParticipants as $participant) { // Cambiado $participantEmail a $participant
+                // Asumir que $participant es un array y tiene una clave 'email'
+                if (is_array($participant) && isset($participant['email'])) {
+                    echo "<li>" . htmlspecialchars($participant['email']) . "</li>";
+                } elseif (is_string($participant)) {
+                    // Fallback por si acaso la estructura fuera un array de strings (emails)
+                    // Aunque la lógica del controlador espera un array de arrays.
+                    echo "<li>" . htmlspecialchars($participant) . "</li>";
+                }
             }
             echo "</ul>";
         } else {
             echo "<p>Aún no hay participantes.</p>";
         }
 
-        // Lógica para apuntarse al plan
-        if (!$viewIsCreator && !$viewHasJoined && !$viewIsFull) {
-            echo "<form action='index.php?action=join_plan' method='POST' style='margin-top: 15px;'>";
-            echo "<input type='hidden' name='plan_id' value='" . htmlspecialchars($viewPlan['id']) . "'>";
-            echo "<button type='submit' name='join_plan_submit'>Apuntarse al Plan</button>";
+        // Botones condicionales para gestionar el plan
+        if ($viewIsCreator) {
+            echo "<div class='plan-actions'>";
+            // Modificar este formulario para incluir los parámetros como campos ocultos
+            echo "<form action='index.php' method='get' style='display: inline;'>";
+            echo "<input type='hidden' name='action' value='edit_plan'>";
+            echo "<input type='hidden' name='id' value='" . htmlspecialchars($viewPlan['id']) . "'>";
+            echo "<button type='submit'>Modificar Plan</button>";
             echo "</form>";
+            
+            echo "<form action='index.php?action=delete_plan&id=" . htmlspecialchars($viewPlan['id']) . "' method='post' style='display: inline;' onsubmit='return confirm(\"¿Estás seguro de que quieres eliminar este plan?\");'>";
+            echo "<button type='submit'>Eliminar Plan</button>";
+            echo "</form>";
+            echo "</div>";
         } elseif ($viewHasJoined) {
-            echo "<p style='color: green; margin-top: 15px;'><strong>Ya estás apuntado a este plan.</strong></p>";
-        } elseif ($viewIsFull && !$viewHasJoined) {
-            echo "<p style='color: red; margin-top: 15px;'><strong>Este plan ya está completo.</strong></p>";
-        } elseif ($viewIsCreator) {
-            echo "<p style='color: blue; margin-top: 15px;'><strong>Eres el creador de este plan.</strong></p>";
+            echo "<div class='plan-actions'>";
+            echo "<form action='index.php?action=leave_plan' method='post'>";
+            echo "<input type='hidden' name='plan_id' value='" . htmlspecialchars($viewPlan['id']) . "'>";
+            echo "<button type='submit'>Cancelar mi asistencia</button>";
+            echo "</form>";
+            echo "</div>";
+        } elseif (!$viewIsFull) {
+            echo "<div class='plan-actions'>";
+            echo "<form action='index.php?action=join_plan' method='post'>";
+            echo "<input type='hidden' name='plan_id' value='" . htmlspecialchars($viewPlan['id']) . "'>";
+            echo "<button type='submit'>Unirme al Plan</button>";
+            echo "</form>";
+            echo "</div>";
+        } else {
+            echo "<p>Este plan está completo.</p>";
         }
 
     } else {

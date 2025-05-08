@@ -51,9 +51,17 @@ switch ($action) {
         $controllerFile = __DIR__ . '/../src/controllers/PlanController.php';
         $viewFile = __DIR__ . '/../src/views/plan_details.php';
         break;
-    case 'join_plan': // Esta acción es solo POST, manejada por PlanController
+    case 'edit_plan': // Añadir este caso
         $controllerFile = __DIR__ . '/../src/controllers/PlanController.php';
-        // PlanController->handleJoinPlanPost() redirige, no necesita vista.
+        // Para GET, PlanController->showEditPlanForm() incluye su propia vista, header y footer.
+        // Para POST, PlanController->handleEditPlanPost() procesa y redirige.
+        // Por lo tanto, no establecemos $viewFile aquí.
+        break;
+    case 'join_plan': // Esta acción es solo POST, manejada por PlanController
+    case 'leave_plan': // Esta acción es solo POST, manejada por PlanController
+    case 'delete_plan': // Esta acción es solo POST, manejada por PlanController
+        $controllerFile = __DIR__ . '/../src/controllers/PlanController.php';
+        // PlanController maneja estas acciones POST y redirige, no necesita vista definida aquí.
         break;
     default:
         $viewFile = __DIR__ . '/../src/views/404.php';
